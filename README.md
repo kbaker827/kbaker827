@@ -86,7 +86,7 @@ By night I build things that probably didn't need building but are a lot more fu
 
 ## 📈 My GitHub Journey
 
-> Yearly totals for stars earned, new repositories created and commits pushed — refreshed weekly by a GitHub Actions workflow.
+> Yearly totals for stars earned, new repositories created and commits pushed — refreshed daily by a GitHub Actions workflow.
 
 <div align="center">
   <img
@@ -139,7 +139,7 @@ By night I build things that probably didn't need building but are a lot more fu
 
 <div align="center">
   <sub>
-    Profile assets (stats, word cloud, trend chart, repo cards &amp; HA page) are auto-refreshed weekly via
+    Profile assets (stats, word cloud, trend chart, repo cards &amp; HA page) are auto-refreshed daily via
     <a href=".github/workflows/update-profile.yml">GitHub Actions</a>.
   </sub>
 </div>
