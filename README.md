@@ -47,7 +47,7 @@ By night I build things that probably didn't need building but are a lot more fu
   />
   &nbsp;
   <img
-    src="https://streak-stats.demolab.com?user=kbaker827&theme=github-dark-blue&hide_border=true&cache_seconds=86400"
+    src="assets/streak-stats.svg"
     alt="GitHub streak stats"
     height="165"
   />

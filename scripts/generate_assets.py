@@ -2,6 +2,7 @@
 """
 Generate profile README assets:
   - assets/github-stats.svg  (stars / commits / repos / forks card)
+  - assets/streak-stats.svg  (total contributions / current & longest streak)
   - assets/word-cloud.png    (technologies & platforms word cloud)
   - assets/trend-chart.png   (yearly stars / repos / commits trend)
   - assets/pin-<repo>.svg    (cards for the most popular repositories)
@@ -13,7 +14,7 @@ Also rewrites the block between the PINNED markers in README.md so the
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from xml.sax.saxutils import escape as xml_escape
 
 import matplotlib
@@ -210,22 +211,29 @@ def get_repos():
     return repos
 
 
-def get_commits_by_year():
-    """Commit contributions per calendar year via the GraphQL API.
+_CONTRIBUTIONS_QUERY = (
+    "query($login:String!,$from:DateTime!,$to:DateTime!){"
+    "user(login:$login){contributionsCollection(from:$from,to:$to){"
+    "totalCommitContributions "
+    "contributionCalendar{weeks{contributionDays{date contributionCount}}}"
+    "}}}"
+)
 
-    One query per year instead of one REST call per (repo, year) pair.
-    Requires a token; returns an empty dict without one.
+
+def get_contributions():
+    """Yearly commit totals and daily contribution counts via GraphQL.
+
+    One query per calendar year (the API caps a range at one year).
+    Requires a token; returns empty results without one.
+
+    Returns (commits_by_year, days) where *days* maps date -> count.
     """
     if not GITHUB_TOKEN:
-        print("  No GITHUB_TOKEN – skipping commit history.")
-        return {}
-    query = (
-        "query($login:String!,$from:DateTime!,$to:DateTime!){"
-        "user(login:$login){contributionsCollection(from:$from,to:$to)"
-        "{totalCommitContributions restrictedContributionsCount}}}"
-    )
+        print("  No GITHUB_TOKEN – skipping contribution history.")
+        return {}, {}
     current_year = datetime.now(tz=timezone.utc).year
     commits = {}
+    days = {}
     for year in range(FIRST_YEAR, current_year + 1):
         variables = {
             "login": USERNAME,
@@ -234,7 +242,7 @@ def get_commits_by_year():
         }
         resp = requests.post(
             "https://api.github.com/graphql",
-            json={"query": query, "variables": variables},
+            json={"query": _CONTRIBUTIONS_QUERY, "variables": variables},
             headers=HEADERS,
             timeout=30,
         )
@@ -244,7 +252,45 @@ def get_commits_by_year():
             raise RuntimeError(f"GraphQL error for {year}: {payload['errors']}")
         coll = payload["data"]["user"]["contributionsCollection"]
         commits[year] = coll["totalCommitContributions"]
-    return commits
+        for week in coll["contributionCalendar"]["weeks"]:
+            for day in week["contributionDays"]:
+                days[date.fromisoformat(day["date"])] = day["contributionCount"]
+    return commits, days
+
+
+# ---------------------------------------------------------------------------
+# Streaks
+# ---------------------------------------------------------------------------
+
+def compute_streaks(days, today=None):
+    """Return total, current and longest streaks from daily counts.
+
+    A streak is a run of consecutive days with at least one contribution.
+    The current streak is not broken by an empty *today*, since the day
+    isn't over yet. Streaks are (length, start, end) tuples; start/end are
+    None for a zero-length streak.
+    """
+    today = today or datetime.now(tz=timezone.utc).date()
+    active = sorted(d for d, c in days.items() if c > 0 and d <= today)
+    total = sum(c for d, c in days.items() if d <= today)
+
+    longest = (0, None, None)
+    run_start = prev = None
+    for d in active:
+        if prev is None or d - prev != timedelta(days=1):
+            run_start = d
+        length = (d - run_start).days + 1
+        if length > longest[0]:
+            longest = (length, run_start, d)
+        prev = d
+
+    current = (0, None, None)
+    if prev is not None and today - prev <= timedelta(days=1):
+        current = ((prev - run_start).days + 1, run_start, prev)
+
+    first_day = active[0] if active else None
+    return {"total": total, "first": first_day,
+            "current": current, "longest": longest}
 
 
 # ---------------------------------------------------------------------------
@@ -427,6 +473,69 @@ def generate_stats_card(repos, commits_by_year, out_path):
     print(f"  Stats card saved -> {out_path}")
 
 
+def _fmt_date(d):
+    return f"{d:%b} {d.day}, {d.year}"
+
+
+def _fmt_range(start, end):
+    if start is None:
+        return "No streak yet"
+    if start == end:
+        return _fmt_date(start)
+    return f"{_fmt_date(start)} – {_fmt_date(end)}"
+
+
+def generate_streak_card(streaks, out_path):
+    """Create an SVG card with total contributions and streak lengths."""
+    w, h = 495, 195
+    col = w / 3
+    accent = "#fb8c00"
+    current_len, cur_start, cur_end = streaks["current"]
+    longest_len, long_start, long_end = streaks["longest"]
+    since = (
+        f"{_fmt_date(streaks['first'])} – Present"
+        if streaks["first"] else "No contributions yet"
+    )
+
+    def column(cx, value, label, label_fill, sub):
+        return [
+            f'<text x="{cx}" y="{h / 2 + 2}" font-family="{_SVG_FONT}" '
+            f'font-size="28" font-weight="bold" fill="{TEXT_COLOR}" '
+            f'text-anchor="middle">{value:,}</text>',
+            f'<text x="{cx}" y="{h / 2 + 52}" font-family="{_SVG_FONT}" '
+            f'font-size="14" font-weight="bold" fill="{label_fill}" '
+            f'text-anchor="middle">{label}</text>',
+            f'<text x="{cx}" y="{h / 2 + 72}" font-family="{_SVG_FONT}" '
+            f'font-size="11" fill="{MUTED_COLOR}" '
+            f'text-anchor="middle">{xml_escape(sub)}</text>',
+        ]
+
+    cx = col * 1.5
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" '
+        f'height="{h}" viewBox="0 0 {w} {h}">',
+        f'<rect width="{w}" height="{h}" rx="4.5" fill="{BG_COLOR}"/>',
+        f'<line x1="{col}" y1="28" x2="{col}" y2="{h - 28}" '
+        f'stroke="{BORDER_COLOR}"/>',
+        f'<line x1="{col * 2}" y1="28" x2="{col * 2}" y2="{h - 28}" '
+        f'stroke="{BORDER_COLOR}"/>',
+        # Ring around the current streak
+        f'<circle cx="{cx}" cy="{h / 2 - 8}" r="40" fill="none" '
+        f'stroke="{accent}" stroke-width="5"/>',
+        *column(col * 0.5, streaks["total"], "Total Contributions",
+                TEXT_COLOR, since),
+        *column(cx, current_len, "Current Streak", accent,
+                _fmt_range(cur_start, cur_end)),
+        *column(col * 2.5, longest_len, "Longest Streak", TEXT_COLOR,
+                _fmt_range(long_start, long_end)),
+        "</svg>",
+    ]
+
+    with open(out_path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(parts))
+    print(f"  Streak card saved -> {out_path}")
+
+
 def _footer_item(parts, icon, value, x, y):
     parts.append(_svg_octicon(icon, x, y - 13, MUTED_COLOR))
     parts.append(
@@ -528,11 +637,16 @@ def main():
     print(f"  Found {len(repos)} repos")
 
     print("Collecting commit activity ...")
-    commits_by_year = get_commits_by_year()
+    commits_by_year, days = get_contributions()
 
     print("Generating stats card ...")
     generate_stats_card(
         repos, commits_by_year, os.path.join(ASSETS_DIR, "github-stats.svg")
+    )
+
+    print("Generating streak card ...")
+    generate_streak_card(
+        compute_streaks(days), os.path.join(ASSETS_DIR, "streak-stats.svg")
     )
 
     print("Generating word cloud ...")
