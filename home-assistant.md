@@ -1,6 +1,6 @@
 # 🏠 Home Assistant Projects
 
-Custom integrations, dashboards and smart-glasses companions I've built around Home Assistant. Generated automatically from my repositories — refreshed weekly.
+Custom integrations, dashboards and smart-glasses companions I've built around Home Assistant. Generated automatically from my repositories — refreshed daily.
 
 | Project | Type | Description | Latest release | ⭐ |
 |---|---|---|---|---|
