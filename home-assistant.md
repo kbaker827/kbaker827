@@ -10,4 +10,4 @@ Custom integrations, dashboards and smart-glasses companions I've built around H
 | [rokid-style-ha](https://github.com/kbaker827/rokid-style-ha) | 🕶️ Companion App | Home Assistant smart home control for Rokid Style Bluetooth glasses -- voice commands and device automation | — | 0 |
 | [tempest-ha-dashboard](https://github.com/kbaker827/tempest-ha-dashboard) | 📊 Dashboard | WeatherFlow Tempest weather station dashboard for Home Assistant | — | 0 |
 
-<sub>Last updated 2026-11-04 · [Back to profile](README.md)</sub>
+<sub>Last updated 2026-11-05 · [Back to profile](README.md)</sub>
