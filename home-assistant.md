@@ -9,5 +9,6 @@ Custom integrations, dashboards and smart-glasses companions I've built around H
 | [rokid-ha-ios](https://github.com/kbaker827/rokid-ha-ios) | 🕶️ Companion App | Home Assistant smart home control for Rokid AR glasses -- iOS companion app with voice commands | — | 0 |
 | [rokid-style-ha](https://github.com/kbaker827/rokid-style-ha) | 🕶️ Companion App | Home Assistant smart home control for Rokid Style Bluetooth glasses -- voice commands and device automation | — | 0 |
 | [tempest-ha-dashboard](https://github.com/kbaker827/tempest-ha-dashboard) | 📊 Dashboard | WeatherFlow Tempest weather station dashboard for Home Assistant | — | 0 |
+| [voice-pe-dual-boot](https://github.com/kbaker827/voice-pe-dual-boot) | 🏠 Project | Design for dual-booting Muse gadget firmware and ESPHome on a Home Assistant Voice PE | — | 0 |
 
-<sub>Last updated 2026-11-05 · [Back to profile](README.md)</sub>
+<sub>Last updated 2026-11-06 · [Back to profile](README.md)</sub>
