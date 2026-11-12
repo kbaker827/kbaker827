@@ -11,4 +11,4 @@ Custom integrations, dashboards and smart-glasses companions I've built around H
 | [tempest-ha-dashboard](https://github.com/kbaker827/tempest-ha-dashboard) | 📊 Dashboard | WeatherFlow Tempest weather station dashboard for Home Assistant | — | 0 |
 | [voice-pe-dual-boot](https://github.com/kbaker827/voice-pe-dual-boot) | 🏠 Project | Design for dual-booting Muse gadget firmware and ESPHome on a Home Assistant Voice PE | — | 0 |
 
-<sub>Last updated 2026-11-11 · [Back to profile](README.md)</sub>
+<sub>Last updated 2026-11-12 · [Back to profile](README.md)</sub>
