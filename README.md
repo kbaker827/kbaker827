@@ -114,11 +114,11 @@ By night I build things that probably didn't need building but are a lot more fu
   <a href="https://github.com/kbaker827/awesome-intune">
     <img src="assets/pin-awesome-intune.svg" alt="awesome-intune"/>
   </a>
+  <a href="https://github.com/kbaker827/Remove-StaleProfiles">
+    <img src="assets/pin-Remove-StaleProfiles.svg" alt="Remove-StaleProfiles"/>
+  </a>
   <a href="https://github.com/kbaker827/RokidAPKs-iOS">
     <img src="assets/pin-RokidAPKs-iOS.svg" alt="RokidAPKs-iOS"/>
-  </a>
-  <a href="https://github.com/kbaker827/rokid-hermes-ios">
-    <img src="assets/pin-rokid-hermes-ios.svg" alt="rokid-hermes-ios"/>
   </a>
 </div>
 <!-- PINNED:END -->
